@@ -95,7 +95,7 @@ public class UserDaoHibernateImpl implements UserDao {
         Session session = sf.openSession();
         logger.info("Открывается транзакция по удалению всех пользователей");
         session.beginTransaction();
-        session.createQuery("delete from users");
+        session.createQuery("delete from users").executeUpdate();
         logger.info("Выполняется удалению");
         session.getTransaction().commit();
         logger.info("Удаление выполнено");
