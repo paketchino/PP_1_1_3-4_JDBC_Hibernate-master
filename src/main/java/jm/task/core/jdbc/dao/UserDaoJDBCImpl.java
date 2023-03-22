@@ -31,12 +31,7 @@ public class UserDaoJDBCImpl implements UserDao {
             cn.commit();
             logger.info("Таблица успешно создана");
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
+            logger.info("Выполняется отмена операции");
             e.printStackTrace();
         }
     }
@@ -49,12 +44,7 @@ public class UserDaoJDBCImpl implements UserDao {
             cn.commit();
             logger.info("Удаление таблицы выполнено");
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
+            logger.info("Выполняется отмена операции");
             e.printStackTrace();
         }
     }
@@ -116,6 +106,12 @@ public class UserDaoJDBCImpl implements UserDao {
                     }
             }
         } catch (Exception e) {
+            try {
+                cn.rollback();
+            } catch (SQLException sqlException) {
+                sqlException.printStackTrace();
+                logger.info("Операция отменена");
+            }
           e.printStackTrace();
         }
         return users;
