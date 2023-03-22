@@ -1,6 +1,6 @@
 package jm.task.core.jdbc;
 
-import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
+import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.model.User;
 
 public class Main {
@@ -9,7 +9,7 @@ public class Main {
         byte age2 = 20;
         byte age3 = 30;
         byte age4 = 40;
-        UserDaoJDBCImpl userDaoJDBC = new UserDaoJDBCImpl();
+        UserDaoHibernateImpl userDaoJDBC = new UserDaoHibernateImpl();
         userDaoJDBC.createUsersTable();
         userDaoJDBC.saveUser("roman", "serg", age1);
         userDaoJDBC.saveUser("pavel", "filimin", age2);
