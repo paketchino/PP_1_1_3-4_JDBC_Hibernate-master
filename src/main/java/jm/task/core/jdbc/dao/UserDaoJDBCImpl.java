@@ -18,43 +18,29 @@ public class UserDaoJDBCImpl implements UserDao {
 
     }
 
+    @Override
     public void createUsersTable() {
         logger.info("Производится создание таблицы");
         try (Statement statement = cn.createStatement()) {
-            cn.setAutoCommit(false);
             String sql = "create table if not exists users (" +
                     "id bigint not null auto_increment primary key, " +
                     "name text not null, " +
                     "last_name text not null," +
                     "age tinyint not null)";
-            statement.executeUpdate(sql);
-            cn.commit();
+            statement.execute(sql);
             logger.info("Таблица успешно создана");
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
 
+    @Override
     public void dropUsersTable() {
         logger.warning("Удаление таблицы");
         try (Statement statement = cn.createStatement()) {
-            cn.setAutoCommit(false);
             statement.executeUpdate("drop table if exists users");
-            cn.commit();
             logger.info("Удаление таблицы выполнено");
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
@@ -73,16 +59,11 @@ public class UserDaoJDBCImpl implements UserDao {
                     name, lastName, age);
             logger.info(message);
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
 
+    @Override
     public void removeUserById(long id) {
         logger.info("Запрос на удаления пользователя по id");
         try (PreparedStatement preparedStatement =
@@ -92,16 +73,11 @@ public class UserDaoJDBCImpl implements UserDao {
             preparedStatement.executeUpdate();
             logger.info("Удаление по id произведено");
         } catch (Exception e) {
-            try {
-                cn.rollback();
-                logger.info("Выполняется отмена операции");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
 
+    @Override
     public List<User> getAllUsers() {
         logger.info("Запрос на получения всех пользователей");
         List<User> users = new ArrayList<>();
@@ -121,20 +97,13 @@ public class UserDaoJDBCImpl implements UserDao {
         return users;
     }
 
+    @Override
     public void cleanUsersTable() {
         logger.warning("Попытка удалить всех пользователей из таблицы");
         try (Statement statement = cn.createStatement()) {
             statement.executeUpdate("delete from users");
-            cn.commit();
             logger.info("Коммит был сохранен. Пользователи удалены");
         } catch (Exception e) {
-            try {
-                logger.info("Выполняется отмена операции");
-                cn.rollback();
-                logger.info("Операция отменена");
-            } catch (SQLException sqlException) {
-                sqlException.printStackTrace();
-            }
             e.printStackTrace();
         }
     }

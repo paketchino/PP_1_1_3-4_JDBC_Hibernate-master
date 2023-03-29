@@ -1,9 +1,6 @@
 package jm.task.core.jdbc.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Table
 @Entity(name = "users")
@@ -12,6 +9,7 @@ public class User {
     private Long id;
 
     @Column
+    @Transient
     private String name;
 
     @Column
