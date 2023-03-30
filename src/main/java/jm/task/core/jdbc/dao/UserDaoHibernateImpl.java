@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -14,13 +15,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
     public static Logger logger = Logger.getLogger("UserDaoHibernateImpl");
 
-    private SessionFactory sf = Util.getSessionFactory();
+    private final SessionFactory sessionFactory = Util.getSessionFactory();
 
     public UserDaoHibernateImpl() {
     }
 
     private <T> T tx(Function<Session, T> command) {
-        Session session = sf.openSession();
+        Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
         try {
             T rsl = command.apply(session);
@@ -39,14 +40,14 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void createUsersTable() {
         logger.info("Выполняется команда добавления таблицы users");
-        Session session = sf.openSession();
+        Session session = sessionFactory.openSession();
         session.beginTransaction();
         session.createSQLQuery(
                 "create table if not exists users (" +
                         "id bigint not null auto_increment primary key, " +
                         "name text not null, " +
                         "last_name text not null," +
-                        "age tinyint not null)");
+                        "age tinyint not null)").executeUpdate();
         session.getTransaction().commit();
         logger.info("Таблица была успешно создана");
         session.close();
@@ -55,9 +56,9 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void dropUsersTable() {
         logger.info("Выполняется команда удаления таблицы users");
-        Session session = sf.openSession();
+        Session session = sessionFactory.openSession();
         session.beginTransaction();
-        session.createSQLQuery("drop table if exists users");
+        session.createSQLQuery("drop table if exists users").executeUpdate();
         session.getTransaction().commit();
         logger.info("Таблица была успешно удалена");
         session.close();
@@ -67,31 +68,42 @@ public class UserDaoHibernateImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         logger.info("Выполняется команда добавления пользователя");
         User user = new User();
-        this.tx(session -> {
+        tx(session -> {
+            user.setAge(age);
             user.setName(name);
             user.setLastName(lastName);
-            user.setAge(age);
             session.save(user);
-            logger.info("Добавления пользователя успешно завершено");
             return user;
         });
+        logger.info("Добавления пользователя успешно завершено");
     }
 
     @Override
     public void removeUserById(long id) {
-        logger.info("Выполняется команда удаление пользователя по id");
-        tx(session -> session.createQuery("from users as u where u.id =:id"));
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.delete(session.get(User.class, id));
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public List<User> getAllUsers() {
-        logger.info("Выполняется команда поиска всех пользователей");
-        return (List<User>) tx(session -> session.createQuery("from users").getResultList());
+        List<User> list = null;
+        try (Session session = sessionFactory.openSession()) {
+            list = session.createQuery("from User", User.class).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
     public void cleanUsersTable() {
         logger.info("Выполняется команда удаления всех пользователей");
-        tx(session -> session.createQuery("delete from users").executeUpdate());
+        tx(session -> session.createQuery("delete from User").executeUpdate());
     }
 }
